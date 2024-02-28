@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../activity.dart';
 import '../activity_card.dart';
+import 'package:animated_reorderable_list/animated_reorderable_list.dart';
 
 class ActivityPage extends StatefulWidget {
   const ActivityPage({super.key});
@@ -14,7 +15,6 @@ class _ActivityPageState extends State<ActivityPage> {
   List<Activity> activities = [];
   late final TextEditingController _activityController;
   late final TextEditingController _whyController;
-
 
   @override
   void initState() {
@@ -34,43 +34,65 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          title: const Text(
-            "Your wall",
-            style: TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white),
+        title: const Text(
+          "Your wall",
+          style: TextStyle(
+              fontWeight: FontWeight.w700, fontSize: 20, color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+              onPressed: deleteTodos,
+              icon: const Icon(
+                Icons.delete_forever,
+                color: Colors.white,
+              ))
+        ],
+      ),
+      body: AnimatedReorderableGridView(
+        padding: const EdgeInsets.all(16),
+        items: activities,
+        itemBuilder: (BuildContext context, int index) {
+          final activity = activities[index];
+          return ActivityCard(
+            key: ValueKey(activity),
+            activity: activity.activity,
+            why: activity.why,
+            color: Colors.primaries[index % Colors.primaries.length].shade50,
+            selected: activity.selected,
+            onChanged: (value) => _handleOnChanged(value, activity),
+          );
+        },
+          sliverGridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2
           ),
-          actions: [
-            IconButton(
-                onPressed: deleteTodos,
-                icon: const Icon(
-                  Icons.delete_forever,
-                  color: Colors.white,
-                ))
-          ],
-        ),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: activities.length,
-          itemBuilder: (BuildContext context, int index) {
-            final activity = activities[index];
-            return ActivityCard(
-              activity: activity.activity,
-              why: activity.why,
-              color: Colors.primaries[index % Colors.primaries.length].shade50,
-              selected: activity.selected,
-              onChanged: (value) => _handleOnChanged(value, activity),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.orangeAccent,
-          onPressed: _displayDialog,
-          child: const Icon(Icons.add, color: Colors.black,),
+        onReorder: (int oldIndex, int newIndex) {
+          setState(() {
+            final activity = activities.removeAt(oldIndex);
+            activities.insert(newIndex, activity);
+          });
+        },
+        enterTransition: [
+          SlideInRight(duration: const Duration(seconds: 1)),
+          FlipInX(
+              begin: 0.8,
+              delay: const Duration(seconds: 1),
+              duration: const Duration(
+                seconds: 3,
+              ),
+              curve: Curves.bounceInOut)
+        ],
+        exitTransition: [SlideInLeft()],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orangeAccent,
+        onPressed: _displayDialog,
+        child: const Icon(
+          Icons.add,
+          color: Colors.black,
         ),
       ),
     );
@@ -88,14 +110,11 @@ class _ActivityPageState extends State<ActivityPage> {
     });
   }
 
-
   void _addTodoItem(Activity activity) {
     setState(() {
       activities.insert(0, activity);
-
     });
   }
-
 
   Future<void> _displayDialog() async {
     return showDialog<void>(
@@ -138,7 +157,8 @@ class _ActivityPageState extends State<ActivityPage> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
-                final activity = Activity(activity: _activityController.text,
+                final activity = Activity(
+                    activity: _activityController.text,
                     why: _whyController.text,
                     selected: false);
                 _addTodoItem(activity);

@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class ActivityCard extends StatefulWidget {
+class ActivityCard extends StatelessWidget {
   final String activity;
   final String why;
   final Color color;
@@ -17,17 +17,12 @@ class ActivityCard extends StatefulWidget {
     required this.onChanged});
 
   @override
-  State<ActivityCard> createState() => _ActivityCardState();
-}
-
-class _ActivityCardState extends State<ActivityCard> {
-  @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8,horizontal: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: widget.color,
+        color: color,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -36,16 +31,24 @@ class _ActivityCardState extends State<ActivityCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "${widget.activity} - WHY",
-                style: const TextStyle(color: Colors.grey, fontSize: 16),
+              Expanded(
+                child: Text(
+                  "$activity - WHY",
+                  overflow: TextOverflow.fade,
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ),
               ),
-              Checkbox(value: widget.selected, onChanged: widget.onChanged)
+              Material(
+                color: color,
+                  child: Checkbox(value: selected, onChanged: onChanged))
             ],
           ),
-          Text(
-            widget.why,
-            style: const TextStyle(color: Colors.black, fontSize: 18),
+          Expanded(
+            child: Text(
+              why,
+              overflow: TextOverflow.fade,
+              style: const TextStyle(color: Colors.black, fontSize: 18),
+            ),
           )
         ],
       ),
